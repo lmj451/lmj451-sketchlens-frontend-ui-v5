@@ -77,6 +77,10 @@
     im.onerror=function(){ alert('이미지를 불러오지 못했습니다.'); };
     im.src=src;
   }
+  /* TODO(Django 연동 지점): 지금은 파일을 dataURL로 읽어 캔버스에 그리기만 하고
+     원본 File 객체는 남기지 않는다. 서버로 보낼 땐 FormData에 이미지가 필요하므로
+     진단 요청 시 imgC.toBlob(...)으로 캔버스 이미지를 꺼내 보내면 된다.
+     (예시 티셔츠/원피스도 같은 방식으로 처리 가능) */
   function readFile(f){
     if(!f||!/^image\//.test(f.type)){ alert('이미지 파일만 올려주세요.'); return; }
     var fr=new FileReader(); fr.onload=function(){ loadImage(fr.result,f.name); }; fr.readAsDataURL(f);
@@ -251,6 +255,9 @@
     return ['왼쪽','가운데','오른쪽'][Math.min(2,Math.floor(gx/(GX/3)))]+' '+
            ['위쪽','가슴~허리','아래쪽'][Math.min(2,Math.floor(gy/(GY/3)))];
   }
+  /* TODO(Django 연동 지점): 지금은 브라우저가 계산한 r.detail 값으로 피드백 문장을
+     프론트에서 만든다. 서버 연동 후에는 LLM이 항목별 comment를 내려주므로
+     이 함수 대신 서버 응답의 comment를 그대로 쓰고, 이 함수는 삭제한다. */
   function comment(id,r){
     var t=r.detail;
     switch(id){
@@ -269,6 +276,10 @@
   var hist=[];
   function tone(p){ return p<=25?'low':(p<=45?'mid':''); }
 
+  /* TODO(Django 연동 지점): 지금 render()는 localAnalyze() 결과 모양
+     ({pcts:{C1..C7}, detail:{sym, closure, ...}})에 맞춰져 있다.
+     백엔드와 합의한 응답 JSON 모양(예: {axes:[{id, score, comment}], measures:{...}})에
+     맞게 읽는 부분을 바꿔야 한다. 정렬·막대·고민 반영 표시 로직은 그대로 써도 된다. */
   function render(r){
     var ranked=AXES.map(function(a){
       var p=r.pcts[a.id];
@@ -278,6 +289,7 @@
     var avg=Math.round(AXES.reduce(function(s,a){ return s+r.pcts[a.id]; },0)/AXES.length);
     hist.push({axis:top.a.name,avg:avg});
 
+    // TODO(Django 연동 지점): 서버 연동 후 아래 '로컬 데모 계산 · 서버 연동 전' 표시는 삭제
     var h='<div class="pills"><span class="pill">로컬 데모 계산 · 서버 연동 전</span></div>';
     h+='<div class="lead"><div class="l">가장 먼저 볼 항목</div>'+
        '<h3>'+top.a.name+' <em>하위 '+top.p+'%</em></h3><p>'+comment(top.a.id,r)+'</p></div>';
@@ -290,6 +302,9 @@
     });
     p1.innerHTML=h;
 
+    /* TODO(Django 연동 지점): 측정값 탭 항목이 코드에 고정돼 있다.
+       서버가 measures를 {항목명: 값} 형태로 주면 그걸 반복문으로 표에 그리도록 바꾼다.
+       아래 hint-box 문구('브라우저가 직접 계산한 로컬 값')도 함께 수정. */
     var t=r.detail;
     p2.innerHTML='<table class="dl">'+
       '<tr><td>좌우 겹침률</td><td>'+Math.round(t.sym*100)+'%</td></tr>'+
@@ -346,6 +361,10 @@
      TODO(Django 연동 지점): 실제로는 이미지 + 고민 텍스트(+ 선택된 항목)를
      서버로 보내 LLM 응답(항목별 점수·피드백)을 받아 render()에 넘겨야 한다.
      지금은 localAnalyze()가 그 자리를 대신한다. */
+  /* TODO(Django 연동 지점): 서버 호출이 실패하거나 시간이 오래 걸릴 때(GPT 호출 실패,
+     타임아웃 등) 보여줄 에러 화면이 아직 없다. fetch의 catch에서 p1에 안내 문구와
+     다시 시도 버튼을 띄우고 runBtn.disabled=false로 되돌려야 한다.
+     요청 시 Django CSRF 토큰(X-CSRFToken 헤더)도 함께 보내야 한다. */
   function runFullDiagnosis(){
     p1.innerHTML='<div class="load">선을 추출하고 진단하는 중<div class="t"><i></i></div></div>';
     runBtn.disabled=true;
