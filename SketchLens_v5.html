@@ -107,6 +107,7 @@
     <div class="card">
       <div class="card-head">
         <h2>진단 결과</h2>
+        <!-- TODO(Django 연동 지점): 서버 연동 후 "로컬 데모 계산" 문구 삭제 또는 변경 -->
         <span class="meta">로컬 데모 계산</span>
       </div>
       <div class="tabs" id="tabs">
@@ -129,6 +130,7 @@
   </div>
 </div>
 
+<!-- TODO(Django 연동 지점): 아래 프로토타입 안내는 데모용 설명. 서버 연동 후 삭제하거나 실제 서비스 안내로 교체 -->
 <div class="foot">
   <p><b>프로토타입 안내.</b>
   좌우 대칭 · 비율 정합 · 부위 완결성 · 디테일 밀도는 업로드한 이미지 픽셀에서 실제로 계산합니다.
@@ -137,7 +139,6 @@
 </div>
 
 <!-- Django 연동 시: src="{% static 'js/sketchlens.js' %}" 로 교체 -->
-<!-- 화면 요소를 먼저 다 그린 뒤 실행돼야 하므로 body 맨 끝에 둔다 -->
 <script src="js/sketchlens.js"></script>
 </body>
 </html>
